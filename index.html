@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rik Declercq — Beeldend Kunstenaar</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-soft: #f8f8f6;
+      --text: #1a1a1a;
+      --text-muted: #6e6e6e;
+      --border: #e8e8e5;
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-weight: 300;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* --- NAVIGATIEBALK --- */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 100;
+      padding: 1.5rem 6%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background-color 0.4s ease, padding 0.4s ease, border-color 0.4s ease;
+      border-bottom: 1px solid transparent;
+    }
+
+    header.scrolled {
+      background-color: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(8px);
+      padding: 1rem 6%;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-family: var(--font-serif);
+      font-size: 1.6rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      color: #ffffff;
+      transition: color 0.4s ease;
+    }
+
+    header.scrolled .logo {
+      color: var(--text);
+    }
+
+    nav {
+      display: flex;
+      gap: 2rem;
+    }
+
+    nav a {
+      text-decoration: none;
+      font-size: 0.85rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.9);
+      transition: color 0.3s ease;
+    }
+
+    nav a:hover {
+      color: #ffffff;
+    }
+
+    header.scrolled nav a {
+      color: var(--text-muted);
+    }
+
+    header.scrolled nav a:hover {
+      color: var(--text);
+    }
+
+    /* --- HERO MET SCROLL-ANIMATIE VOOR DE 3 QUOTES --- */
+    .hero-scroll-track {
+      position: relative;
+      height: 220vh;
+      background-color: #1c1c1c;
+    }
+
+    .hero {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      width: 100%;
+      overflow: hidden;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #1c1c1c;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      will-change: transform;
+      transition: transform 0.15s ease-out;
+    }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.35) 0%,
+        rgba(0, 0, 0, 0.28) 50%,
+        rgba(0, 0, 0, 0.58) 100%
+      );
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      color: #ffffff;
+      max-width: 820px;
+      padding: 0 2rem;
+    }
+
+    .quote-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .quote-line {
+      font-family: var(--font-serif);
+      font-size: clamp(2.4rem, 5.2vw, 4.2rem);
+      font-style: italic;
+      font-weight: 400;
+      line-height: 1.2;
+      text-shadow: 0 2px 24px rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .quote-line.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .scroll-indicator {
+      position: absolute;
+      bottom: 2.2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+      transition: opacity 0.4s ease;
+    }
+
+    .scroll-line {
+      width: 1px;
+      height: 36px;
+      background: rgba(255, 255, 255, 0.65);
+      animation: scrollPulse 2s infinite;
+    }
+
+    @keyframes scrollPulse {
+      0%, 100% { transform: scaleY(0.5); opacity: 0.4; }
+      50% { transform: scaleY(1); opacity: 1; }
+    }
+
+    /* --- HOOFDINHOUD --- */
+    main {
+      position: relative;
+      z-index: 2;
+      background-color: var(--bg);
+      box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.12);
+    }
+
+    section {
+      padding: 7rem 6%;
+      max-width: 1320px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.8rem;
+      display: block;
+    }
+
+    h2 {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      font-weight: 400;
+      margin-bottom: 2rem;
+      color: var(--text);
+    }
+
+    /* --- OVER MIJ --- */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 4rem;
+      align-items: center;
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .about-image-wrap {
+      display: flex;
+      justify-content: center;
+    }
+
+    .about-image {
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: 50% 20%;
+      background-color: var(--bg-soft);
+      border: 1px solid var(--border);
+      display: block;
+    }
+
+    .about-text p {
+      margin-bottom: 1.3rem;
+      color: #333333;
+      font-size: 1.05rem;
+    }
+
+    /* --- GALERIJ (PUUR BEELD, GEEN TEKST) --- */
+    #galerij {
+      border-top: 1px solid var(--border);
+    }
+
+    .gallery-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .gallery-header h2 {
+      margin-bottom: 0;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+
+    .filter-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 0.5rem 1.1rem;
+      font-family: var(--font-sans);
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+      background-color: var(--text);
+      color: #ffffff;
+      border-color: var(--text);
+    }
+
+    .gallery-grid {
+      column-count: 3;
+      column-gap: 1.8rem;
+    }
+
+    .art-card {
+      break-inside: avoid;
+      margin-bottom: 1.8rem;
+      cursor: pointer;
+    }
+
+    .art-img-wrap {
+      overflow: hidden;
+      background-color: var(--bg-soft);
+    }
+
+    .art-img-wrap img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .art-card:hover .art-img-wrap img {
+      transform: scale(1.03);
+    }
+
+    /* --- CONTACT --- */
+    .contact-wrapper {
+      background-color: var(--bg-soft);
+      border-top: 1px solid var(--border);
+    }
+
+    .contact-inner {
+      max-width: 620px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .contact-title {
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-size: clamp(1.8rem, 3vw, 2.5rem);
+      margin-bottom: 1.2rem;
+    }
+
+    .contact-inner p {
+      color: var(--text-muted);
+      margin-bottom: 2.5rem;
+      font-size: 1.02rem;
+    }
+
+    /* Contactformulier */
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      text-align: left;
+      margin-bottom: 2.5rem;
+    }
+
+    .contact-form input,
+    .contact-form textarea {
+      width: 100%;
+      padding: 0.95rem 1.1rem;
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      font-weight: 300;
+      color: var(--text);
+      background-color: #ffffff;
+      border: 1px solid var(--border);
+      outline: none;
+      transition: border-color 0.25s ease;
+    }
+
+    .contact-form input:focus,
+    .contact-form textarea:focus {
+      border-color: var(--text);
+    }
+
+    .contact-form textarea {
+      min-height: 140px;
+      resize: vertical;
+    }
+
+    /* Onzichtbaar anti-bot veld */
+    .honeypot {
+      display: none !important;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      background-color: var(--text);
+      color: #ffffff;
+      text-decoration: none;
+      border: 1px solid var(--text);
+      padding: 1rem 2.4rem;
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.82;
+    }
+
+    .btn-outline {
+      display: inline-block;
+      border: 1px solid var(--text);
+      color: var(--text);
+      text-decoration: none;
+      padding: 0.9rem 2.2rem;
+      font-size: 0.82rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .btn-outline:hover {
+      background-color: var(--text);
+      color: #ffffff;
+    }
+
+    .contact-divider {
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    /* --- FOOTER --- */
+    footer {
+      text-align: center;
+      padding: 2.5rem 6%;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background-color: var(--bg);
+      border-top: 1px solid var(--border);
+    }
+
+    /* --- LIGHTBOX (GROOT BEELD GECENTREERD, ZONDER TEKST) --- */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(255, 255, 255, 0.98);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .lightbox.open {
+      display: flex;
+      opacity: 1;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 1.5rem;
+      right: 2rem;
+      background: none;
+      border: none;
+      font-size: 2.4rem;
+      color: var(--text);
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .lightbox img {
+      max-width: 90vw;
+      max-height: 88vh;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* --- FADE-IN ANIMATIE --- */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* --- TABLET & MOBIEL --- */
+    @media (max-width: 1024px) {
+      .gallery-grid {
+        column-count: 2;
+      }
+    }
+
+    @media (max-width: 820px) {
+      header {
+        padding: 1.2rem 5%;
+      }
+      nav {
+        gap: 1.1rem;
+      }
+      nav a {
+        font-size: 0.75rem;
+      }
+      .about-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+      .about-text {
+        text-align: center;
+      }
+      section {
+        padding: 4.5rem 5%;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .gallery-grid {
+        column-count: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVIGATIE -->
+  <header id="navbar">
+    <a href="#" class="logo">Rik Declercq</a>
+    <nav>
+      <a href="#over-mij">Over mij</a>
+      <a href="#galerij">Galerij</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <!-- 1. BANNERFOTO & GEANIMEERDE QUOTES -->
+  <div class="hero-scroll-track" id="heroTrack">
+    <div class="hero" id="hero">
+      <img
+        src="images/banner.jpg"
+        alt="Rik Declercq"
+        class="hero-bg"
+        id="heroBg"
+      />
+      <div class="hero-overlay"></div>
+
+      <div class="hero-content" id="heroContent">
+        <div class="quote-stack">
+          <span class="quote-line visible" id="quote1">“Ik zoek”</span>
+          <span class="quote-line" id="quote2">“Ik vind”</span>
+          <span class="quote-line" id="quote3">“Ik speel”</span>
+        </div>
+      </div>
+
+      <a href="#over-mij" class="scroll-indicator" id="scrollIndicator">
+        <span>Scroll</span>
+        <div class="scroll-line"></div>
+      </a>
+    </div>
+  </div>
+
+  <!-- WITTE GALERIJ-INHOUD -->
+  <main>
+
+    <!-- 2. OVER MIJ -->
+    <section id="over-mij" class="reveal">
+      <div class="about-grid">
+        <div class="about-image-wrap">
+          <img
+            src="images/profiel.png"
+            alt="Rik Declercq"
+            class="about-image"
+          />
+        </div>
+        <div class="about-text">
+          <span class="section-label">Over mij</span>
+          <h2>Rik Declercq</h2>
+          <p>
+            De werken – houtsculpturen, assemblages, collages en keramiek – kregen vorm toen ik een punt zette achter de loopbaan als leraar.
+          </p>
+          <p>
+            De tekeningen, al of niet op vraag of cadeau, waren tussendoortjes. Meestal een uitdagend spelletje. Het ludieke bleef en blijft de motor van mijn bezig zijn.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. GALERIJ -->
+    <section id="galerij">
+      <div class="gallery-header">
+        <div>
+          <span class="section-label">Collectie</span>
+          <h2>Galerij</h2>
+        </div>
+
+        <div class="filters" id="filterButtons"></div>
+      </div>
+
+      <div class="gallery-grid" id="galleryGrid"></div>
+    </section>
+
+    <!-- 4. CONTACT -->
+    <div class="contact-wrapper">
+      <section id="contact" class="reveal">
+        <div class="contact-inner">
+          <h2 class="contact-title">Contact</h2>
+          <p>
+            Benieuwd naar nieuw werk, tentoonstellingen of heb je een vraag?
+            Stuur gerust een berichtje via het formulier of volg mijn werk op Instagram.
+          </p>
+
+          <!-- SPAMVRIJ CONTACTFORMULIER VIA FORMSPREE -->
+          <form
+            class="contact-form"
+            action="https://formspree.io/f/xvkaqvvo"
+            method="POST"
+          >
+            <input type="text" name="naam" placeholder="Je naam" required />
+            <input type="email" name="email" placeholder="Je e-mailadres" required />
+            <textarea name="bericht" placeholder="Je bericht..." required></textarea>
+
+            <!-- Onzichtbare anti-bot valstrik -->
+            <input type="text" name="_gotcha" class="honeypot" tabindex="-1" autocomplete="off" />
+
+            <button type="submit" class="btn-primary">Bericht versturen</button>
+          </form>
+
+          <div class="contact-divider">of via</div>
+
+          <a
+            href="https://www.instagram.com/rikdeclercqbeeld?knvt=MW1lcWVjbXYyNXdmNw%3D%3D&utm_source=qr"
+            target="_blank"
+            rel="noopener"
+            class="btn-outline"
+          >
+            Instagram
+          </a>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <footer>
+    &copy; <span id="year"></span> Rik Declercq. Alle rechten voorbehouden.
+  </footer>
+
+  <!-- LIGHTBOX POP-UP (PUUR BEELD) -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <button class="lightbox-close" id="lightboxClose" aria-label="Sluiten">&times;</button>
+    <img id="lbImg" src="" alt="Kunstwerk van Rik Declercq" />
+  </div>
+
+  <script>
+    // =========================================================================
+    // ALLE KUNSTWERKEN VAN RIK DECLERCQ
+    // =========================================================================
+    const kunstwerken = [
+      // --- BEELDEN (1 t/m 9) ---
+      { categorie: "beelden", foto: "images/beelden/beeld1.png" },
+      { categorie: "beelden", foto: "images/beelden/beeld2.png" },
+      { categorie: "beelden", foto: "images/beelden/beeld3.png" },
+      { categorie: "beelden", foto: "images/beelden/beeld4.png" },
+      { categorie: "beelden", foto: "images/beelden/beeld5.png" },
+      { categorie: "beelden", foto: "images/beelden/beeld6.png" },
+      { categorie: "beelden", foto: "images/beelden/beeld7.png" },
+      { categorie: "beelden", foto: "images/beelden/beeld8.png" },
+      { categorie: "beelden", foto: "images/beelden/beeld9.png" },
+
+      // --- KERAMIEK (1 t/m 2) ---
+      { categorie: "keramiek", foto: "images/keramiek/keramiek1.png" },
+      { categorie: "keramiek", foto: "images/keramiek/keramiek2.png" },
+
+      // --- TEKENINGEN (1) ---
+      { categorie: "tekeningen", foto: "images/tekeningen/tekening1.png" },
+
+      // --- ASSEMBLAGES (1 t/m 3) ---
+      { categorie: "assemblages", foto: "images/assemblages/assemblage1.png" },
+      { categorie: "assemblages", foto: "images/assemblages/assemblage2.png" },
+      { categorie: "assemblages", foto: "images/assemblages/assemblage3.png" },
+
+      // --- COLLAGES (1 t/m 8) ---
+      { categorie: "collages", foto: "images/collages/collage1.png" },
+      { categorie: "collages", foto: "images/collages/collage2.png" },
+      { categorie: "collages", foto: "images/collages/collage3.png" },
+      { categorie: "collages", foto: "images/collages/collage4.png" },
+      { categorie: "collages", foto: "images/collages/collage5.png" },
+      { categorie: "collages", foto: "images/collages/collage6.png" },
+      { categorie: "collages", foto: "images/collages/collage7.png" },
+      { categorie: "collages", foto: "images/collages/collage8.png" }
+    ];
+
+    // --- FILTERKNOPPEN AUTOMATISCH OPBOUWEN (VERBERGT LEGE CATEGORIEËN) ---
+    const alleCategorieen = [
+      { id: "alle", label: "Alles" },
+      { id: "beelden", label: "Beelden" },
+      { id: "keramiek", label: "Keramiek" },
+      { id: "tekeningen", label: "Tekeningen" },
+      { id: "collages", label: "Collages" },
+      { id: "assemblages", label: "Assemblages" },
+      { id: "overig", label: "Overig" }
+    ];
+
+    const filterContainer = document.getElementById('filterButtons');
+    const galleryGrid = document.getElementById('galleryGrid');
+
+    alleCategorieen.forEach(cat => {
+      const heeftWerken = cat.id === 'alle' || kunstwerken.some(w => w.categorie === cat.id);
+      if (!heeftWerken) return;
+
+      const btn = document.createElement('button');
+      btn.className = 'filter-btn' + (cat.id === 'alle' ? ' active' : '');
+      btn.dataset.filter = cat.id;
+      btn.textContent = cat.label;
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderGallery(cat.id);
+      });
+      filterContainer.appendChild(btn);
+    });
+
+    function renderGallery(filter = 'alle') {
+      galleryGrid.innerHTML = '';
+      const gefilterd = filter === 'alle'
+        ? kunstwerken
+        : kunstwerken.filter(werk => werk.categorie === filter);
+
+      gefilterd.forEach(werk => {
+        const card = document.createElement('article');
+        card.className = 'art-card';
+        card.innerHTML = `
+          <div class="art-img-wrap">
+            <img src="${werk.foto}" alt="Kunstwerk van Rik Declercq" loading="lazy" />
+          </div>
+        `;
+        card.addEventListener('click', () => openLightbox(werk.foto));
+        galleryGrid.appendChild(card);
+      });
+    }
+
+    renderGallery();
+
+    // --- LIGHTBOX ---
+    const lightbox = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lbImg');
+    const lightboxClose = document.getElementById('lightboxClose');
+
+    function openLightbox(fotoSrc) {
+      lbImg.src = fotoSrc;
+      lightbox.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeLightbox();
+    });
+
+    // --- SCROLL-ANIMATIE VOOR DE 3 QUOTES & NAVIGATIEBALK ---
+    const navbar = document.getElementById('navbar');
+    const heroTrack = document.getElementById('heroTrack');
+    const heroBg = document.getElementById('heroBg');
+    const quote2 = document.getElementById('quote2');
+    const quote3 = document.getElementById('quote3');
+    const scrollIndicator = document.getElementById('scrollIndicator');
+
+    function handleScroll() {
+      const scrollY = window.scrollY;
+      const trackHeight = heroTrack.offsetHeight;
+      const vh = window.innerHeight;
+      const maxHeroScroll = Math.max(trackHeight - vh, 1);
+      const progress = Math.min(Math.max(scrollY / maxHeroScroll, 0), 1);
+
+      heroBg.style.transform = `scale(${1 + progress * 0.08})`;
+
+      quote2.classList.toggle('visible', progress >= 0.22);
+      quote3.classList.toggle('visible', progress >= 0.52);
+
+      scrollIndicator.style.opacity = progress > 0.65 ? '0' : '1';
+      navbar.classList.toggle('scrolled', scrollY > trackHeight - 80);
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    // --- FADE-IN VAN SECTIES ---
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
